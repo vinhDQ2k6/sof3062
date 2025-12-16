@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="vi">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Quản lý sinh viên</title>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+		<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+	</head>
+	<body>
+		<div id="app" class="container mt-4">
+			<h2 class="mb-4">Quản lý sinh viên</h2>
+
+			<!-- Form -->
+			<div class="card mb-4">
+				<div class="card-body">
+					<form @submit.prevent="handleSubmit">
+						<div class="row mb-3">
+							<div class="col-md-6">
+								<label class="form-label">Mã SV</label>
+								<input class="form-control" type="text" v-model="form.maSV" required />
+							</div>
+							<div class="col-md-6">
+								<label class="form-label">Họ và Tên</label>
+								<input class="form-control" type="text" v-model="form.hoTen" required />
+							</div>
+						</div>
+						<div class="row mb-3">
+							<div class="col-md-6">
+								<label class="form-label">Điểm</label>
+								<input
+									class="form-control"
+									type="number"
+									v-model="form.diem"
+									step="0.1"
+									min="0"
+									max="10"
+									required
+								/>
+							</div>
+							<div class="col-md-6">
+								<label class="form-label">Chuyên ngành</label>
+								<select class="form-select" v-model="form.chuyenNganh">
+									<option value="CNTT">Công nghệ thông tin</option>
+									<option value="TKDH">Thiết kế đồ họa</option>
+									<option value="QTDN">Quản trị doanh nghiệp</option>
+									<option value="TMDT">Thương mại điện tử</option>
+								</select>
+							</div>
+						</div>
+						<button class="btn btn-primary" type="button" @click="addStudent" :disabled="isEditing">
+							Thêm
+						</button>
+						<button class="btn btn-warning" type="button" @click="updateStudent" :disabled="!isEditing">
+							Cập nhật
+						</button>
+						<button class="btn btn-secondary" type="button" @click="resetForm">Làm mới</button>
+					</form>
+				</div>
+			</div>
+
+			<!-- Table -->
+			<table class="table table-bordered table-striped">
+				<thead>
+					<tr>
+						<th>Mã SV</th>
+						<th>Họ và Tên</th>
+						<th>Điểm</th>
+						<th>Chuyên ngành</th>
+						<th>Hành động</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr v-for="(sv, id) in students" :key="id">
+						<td>{{ sv.maSV }}</td>
+						<td>{{ sv.hoTen }}</td>
+						<td>{{ sv.diem }}</td>
+						<td>{{ sv.chuyenNganh }}</td>
+						<td>
+							<button class="btn btn-info btn-sm me-2" @click="editStudent(id)">Sửa</button>
+							<button class="btn btn-danger btn-sm" @click="deleteStudent(id)">Xóa</button>
+						</td>
+					</tr>
+					<tr v-if="Object.keys(students).length === 0">
+						<td class="text-center" colspan="5">Không có dữ liệu</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<script>
+			new Vue({
+				el: "#app",
+				data: {
+					firebaseUrl: "",
+					students: {},
+					form: {
+						maSV: "",
+						hoTen: "",
+						diem: "",
+						chuyenNganh: "CNTT"
+					},
+					currentId: null,
+					isEditing: false
+				},
+				mounted() {
+					this.getConfig();
+				},
+				methods: {
+					getConfig() {
+						// Fetch Firebase URL from backend
+						axios
+							.get("/api/sinhvien/config")
+							.then((response) => {
+								this.firebaseUrl = response.data.url;
+								this.loadStudents();
+							})
+							.catch((error) => {
+								console.error("Error loading config:", error);
+								alert("Không thể tải cấu hình hệ thống.");
+							});
+					},
+					loadStudents() {
+						if (!this.firebaseUrl) return;
+						axios
+							.get(this.firebaseUrl + "/sinhVien.json")
+							.then((response) => {
+								this.students = response.data || {};
+							})
+							.catch((error) => {
+								console.error("Error loading students:", error);
+							});
+					},
+					addStudent() {
+						if (!this.firebaseUrl) return;
+						// Using Axios for Create
+						axios
+							.post(this.firebaseUrl + "/sinhVien.json", this.form)
+							.then((response) => {
+								alert("Thêm thành công!");
+								this.loadStudents();
+								this.resetForm();
+							})
+							.catch((error) => {
+								console.error("Error adding student:", error);
+								alert("Lỗi khi thêm sinh viên.");
+							});
+					},
+					updateStudent() {
+						if (!this.firebaseUrl || !this.currentId) return;
+						// Using Axios for Update
+						axios
+							.put(this.firebaseUrl + "/sinhVien/" + this.currentId + ".json", this.form)
+							.then((response) => {
+								alert("Cập nhật thành công!");
+								this.loadStudents();
+								this.resetForm();
+							})
+							.catch((error) => {
+								console.error("Error updating student:", error);
+								alert("Lỗi khi cập nhật sinh viên.");
+							});
+					},
+					editStudent(id) {
+						// Using RestTemplate (via Backend) for Edit (Fetch data)
+						axios
+							.get("/api/sinhvien/edit/" + id)
+							.then((response) => {
+								this.form = response.data;
+								this.currentId = id;
+								this.isEditing = true;
+							})
+							.catch((error) => {
+								console.error("Error fetching student details:", error);
+								alert("Lỗi khi tải thông tin sinh viên.");
+							});
+					},
+					deleteStudent(id) {
+						if (confirm("Bạn có chắc chắn muốn xóa?")) {
+							// Using RestTemplate (via Backend) for Delete
+							axios
+								.delete("/api/sinhvien/delete/" + id)
+								.then((response) => {
+									alert("Xóa thành công!");
+									this.loadStudents();
+								})
+								.catch((error) => {
+									console.error("Error deleting student:", error);
+									alert("Lỗi khi xóa sinh viên.");
+								});
+						}
+					},
+					resetForm() {
+						this.form = {
+							maSV: "",
+							hoTen: "",
+							diem: "",
+							chuyenNganh: "CNTT"
+						};
+						this.currentId = null;
+						this.isEditing = false;
+					}
+				}
+			});
+		</script>
+	</body>
+</html>
