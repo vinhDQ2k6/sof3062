@@ -1,6 +1,6 @@
 package com.asm.sof3062.controller;
 
-import com.asm.sof3062.service.SinhVienService;
+import com.asm.sof3062.service.NhanVienService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 /**
- * <h1>SinhVienController</h1>
+ * <h1>NhanVienController</h1>
  * <p>
  * This is the "Waiter" of our restaurant (application).
  * </p>
@@ -22,11 +22,11 @@ import java.util.Map;
  * </p>
  */
 @RestController
-@RequestMapping("/api/sinhvien")
+@RequestMapping("/api/nhanvien")
 @RequiredArgsConstructor
-public class SinhVienController {
+public class NhanVienController {
 
-    private final SinhVienService sinhVienService;
+    private final NhanVienService nhanVienService;
 
     @Value("${FIREBASE_DATABASE_URL}")
     private String firebaseUrl;
@@ -46,26 +46,26 @@ public class SinhVienController {
     }
 
     /**
-     * Handles the request to get student details for editing.
+     * Handles the request to get employee details for editing.
      *
-     * @param id The ID of the student to edit.
-     * @return The student data.
+     * @param id The ID of the employee to edit.
+     * @return The employee data.
      */
     @GetMapping("/edit/{id}")
     public ResponseEntity<Object> edit(@PathVariable String id) {
-        Object result = sinhVienService.getStudentById(id);
+        Object result = nhanVienService.getEmployeeById(id);
         return ResponseEntity.ok(result);
     }
 
     /**
-     * Handles the request to delete a student.
+     * Handles the request to delete an employee.
      *
-     * @param id The ID of the student to delete.
+     * @param id The ID of the employee to delete.
      * @return An empty response indicating success.
      */
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable String id) {
-        sinhVienService.deleteStudent(id);
+        nhanVienService.deleteEmployee(id);
         return ResponseEntity.ok().build();
     }
 }

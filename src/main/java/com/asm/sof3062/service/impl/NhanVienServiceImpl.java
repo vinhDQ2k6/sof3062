@@ -1,16 +1,16 @@
 package com.asm.sof3062.service.impl;
 
-import com.asm.sof3062.service.SinhVienService;
+import com.asm.sof3062.service.NhanVienService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * <h1>SinhVienServiceImpl</h1>
+ * <h1>NhanVienServiceImpl</h1>
  * <p>
  * This is the actual worker who does the job defined by the Manager
- * (SinhVienService).
+ * (NhanVienService).
  * </p>
  * <p>
  * <b>Why do we need this?</b><br>
@@ -20,7 +20,7 @@ import org.springframework.web.client.RestTemplate;
  */
 @Service
 @RequiredArgsConstructor
-public class SinhVienServiceImpl implements SinhVienService {
+public class NhanVienServiceImpl implements NhanVienService {
 
     private final RestTemplate restTemplate;
 
@@ -30,13 +30,13 @@ public class SinhVienServiceImpl implements SinhVienService {
     /**
      * {@inheritDoc}
      * <p>
-     * It builds the specific URL for the student (like finding their home address)
+     * It builds the specific URL for the employee (like finding their home address)
      * and sends the messenger to get the info.
      * </p>
      */
     @Override
-    public Object getStudentById(String id) {
-        String url = firebaseUrl + "/sinhVien/" + id + ".json";
+    public Object getEmployeeById(String id) {
+        String url = firebaseUrl + "/nhanVien/" + id + ".json";
         return restTemplate.getForObject(url, Object.class);
     }
 
@@ -47,8 +47,8 @@ public class SinhVienServiceImpl implements SinhVienService {
      * </p>
      */
     @Override
-    public void deleteStudent(String id) {
-        String url = firebaseUrl + "/sinhVien/" + id + ".json";
+    public void deleteEmployee(String id) {
+        String url = firebaseUrl + "/nhanVien/" + id + ".json";
         restTemplate.delete(url);
     }
 }
